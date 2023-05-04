@@ -2,24 +2,47 @@
 <html>
   <head>
     <meta charset="UTF-8" />
-    <title>Hello World!</title>
-    <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
     <meta
       http-equiv="Content-Security-Policy"
       content="default-src 'self'; script-src 'self'"
     />
-    <meta
-      http-equiv="X-Content-Security-Policy"
-      content="default-src 'self'; script-src 'self'"
-    />
+    <title>Things Helper</title>
+    <link rel="stylesheet" href="default.css" />
   </head>
   <body>
-    <h1>Hello World!</h1>
-    We are using Node.js <span id="node-version"></span>, Chromium
-    <span id="chrome-version"></span>, and Electron
-    <span id="electron-version"></span>.
+    <header class="drag">
+      <h1>Things</h1>
+    </header>
 
-    <!-- You can also require other files to run in this process -->
+    <main>
+      <p>Code: <strong id="code"></strong></p>
+
+      <div>
+        <label>
+          <input type="radio" name="action" value="tab" checked />
+          Tab
+        </label>
+      </div>
+
+      <div>
+        <label>
+          <input type="radio" name="action" value="enter" />
+          Enter
+        </label>
+      </div>
+
+      <div>
+        <label>
+          <input type="radio" name="action" value="open" />
+          Open
+        </label>
+      </div>
+    </main>
+
+    <footer>
+      <p>Scanner: <strong id="device-name"></strong></p>
+    </footer>
+
     <script src="./dist/renderer.js"></script>
   </body>
 </html>

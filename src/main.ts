@@ -1,22 +1,105 @@
-import { app, BrowserWindow } from "electron";
+import { keyboard } from "@nut-tree/nut-js";
+import { app, BrowserWindow, ipcMain, Menu, nativeImage, Tray } from "electron";
 import * as path from "path";
 
-function createWindow() {
-  // Create the browser window.
+async function createWindow() {
+  const preloadScriptPath = path.join(__dirname, "preload.js");
+
   const mainWindow = new BrowserWindow({
-    height: 600,
+    width: 150,
+    height: 200,
+    show: false,
+    titleBarStyle: "hiddenInset",
     webPreferences: {
-      preload: path.join(__dirname, "preload.js"),
+      contextIsolation: true,
+      preload: preloadScriptPath,
     },
-    width: 800,
   });
 
-  // and load the index.html of the app.
-  mainWindow.loadFile(path.join(__dirname, "../index.html"));
+  mainWindow.once("ready-to-show", () => {
+    mainWindow.show();
+  });
 
-  // Open the DevTools.
-  mainWindow.webContents.openDevTools();
+  mainWindow.webContents.session.on(
+    "select-serial-port",
+    (event, portList, webContents, callback) => {
+      //Add listeners to handle ports being added or removed before the callback for `select-serial-port`
+      //is called.
+      mainWindow.webContents.session.on("serial-port-added", (event, port) => {
+        console.log("serial-port-added FIRED WITH", port);
+        //Optionally update portList to add the new port
+      });
+
+      mainWindow.webContents.session.on(
+        "serial-port-removed",
+        (event, port) => {
+          console.log("serial-port-removed FIRED WITH", port);
+          //Optionally update portList to remove the port
+        }
+      );
+
+      event.preventDefault();
+      if (portList && portList.length > 0) {
+        callback(portList[0].portId);
+      } else {
+        callback(""); //Could not find any matching devices
+      }
+    }
+  );
+
+  mainWindow.webContents.session.setPermissionCheckHandler(
+    (webContents, permission, requestingOrigin, details) => {
+      if (permission === "serial" && details.securityOrigin === "file:///") {
+        return true;
+      }
+
+      return false;
+    }
+  );
+
+  mainWindow.webContents.session.setDevicePermissionHandler((details) => {
+    if (details.deviceType === "serial" && details.origin === "file://") {
+      return true;
+    }
+
+    return false;
+  });
+
+  await mainWindow.loadFile(path.join(__dirname, "../index.html"));
+
+  keyboard.config.autoDelayMs = 0;
+
+  ipcMain.handle(
+    "scannedBarcode",
+    async function toMain(
+      _event,
+      barcode: string,
+      mode: "tab" | "enter" | "open"
+    ) {
+      switch (mode) {
+        case "enter":
+          keyboard.type(`${barcode}\n`);
+          break;
+        case "tab":
+          keyboard.type(`${barcode}\t`);
+          break;
+        case "open":
+          console.log(
+            "tell browser to open",
+            `https://things.p2.network/hardware/bytag?assetTag=${encodeURIComponent(
+              barcode
+            )}`
+          );
+      }
+    }
+  );
+
+  // mainWindow.webContents.openDevTools();
+
+  await mainWindow.webContents.executeJavaScript(`testIt();`, true);
 }
+
+Menu.setApplicationMenu(null);
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
@@ -35,9 +118,9 @@ app.whenReady().then(() => {
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
 app.on("window-all-closed", () => {
-  if (process.platform !== "darwin") {
-    app.quit();
-  }
+  // if (process.platform !== "darwin") {
+  app.quit();
+  // }
 });
 
 // In this file you can include the rest of your app"s specific main process
