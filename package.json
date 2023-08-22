@@ -21,7 +21,7 @@
   "license": "CC0-1.0",
   "devDependencies": {
     "@types/w3c-web-serial": "^1.0.3",
-    "@typescript-eslint/eslint-plugin": "^6.1.0",
+    "@typescript-eslint/eslint-plugin": "^6.4.1",
     "@typescript-eslint/parser": "^6.1.0",
     "electron": "^25.3.1",
     "eslint": "^8.45.0",
