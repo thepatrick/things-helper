@@ -29,9 +29,7 @@ function filterStream(prefix: string) {
         controller.enqueue(chunk.substring(prefix.length));
       } else {
         console.log(
-          chunk,
-          "is not one of mine, it does not start with",
-          prefix
+          `[${chunk}] is not one of mine, it does not start with [${prefix}]`
         );
       }
     },
@@ -60,6 +58,7 @@ async function testIt() {
   const filters = [
     // the 2D Desktop Barcode Scanner I have
     { usbVendorId: 0x067b, usbProductId: 0x2303 },
+    { usbVendorId: 0x1a86, usbProductId: 0x5723 },
   ];
 
   const deviceNameEl = document.getElementById("device-name");
